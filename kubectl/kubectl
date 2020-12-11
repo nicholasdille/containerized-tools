@@ -1,0 +1,6 @@
+#!/bin/bash
+
+docker run --interactive --tty \
+    --mount "type=bind,src=${HOME}/.kube,dst=${HOME}/.kube" \
+    --user "$(id -u):$(id -g)" \
+    kubectl "$@"

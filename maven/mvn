@@ -1,0 +1,7 @@
+#!/bin/bash
+
+docker run --interactive --tty \
+    --mount "type=bind,src=${HOME},dst=${HOME}" \
+    --user "$(id-u):$(id -g)" \
+    --workdir "${PWD}" \
+    maven:3.6.3 "$@"

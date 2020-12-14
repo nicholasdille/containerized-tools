@@ -1,7 +1,25 @@
 #!/bin/bash
 
+: "${MAVEN_IMAGE:=maven:3.6.3}"
+
+#-f, --file
+#-gs,--global-settings
+#-gt,--global-toolchains
+#-s,--settings
+#-t,--toolchains
+
+#readlink -f ${parameter}
+#if not $parameter contains $HOME or $PWD:
+#  add mount
+
+if ! docker pull --quiet "${MAVEN_IMAGE}" >/dev/null; then
+    echo "ERROR: Unable to pull ${MAVEN_IMAGE}."
+    exit 1
+fi
+
 docker run --interactive --tty \
     --mount "type=bind,src=${HOME},dst=${HOME}" \
+    --mount "type=bind,src=${PWD},dst=${PWD}" \
     --user "$(id-u):$(id -g)" \
     --workdir "${PWD}" \
-    maven:3.6.3 "$@"
+    "${MAVEN_IMAGE}" "$@"

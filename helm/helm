@@ -1,0 +1,7 @@
+#!/bin/bash
+
+docker run --interactive --tty \
+    --mount "type=bind,src=${HOME}/.config/helm,dst=${HOME}/.config/helm" \
+    --mount "type=bind,src=${PWD},dst=${PWD}" \
+    --user "$(id -u):$(id -g)" \
+    helm "$@"

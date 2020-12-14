@@ -1,0 +1,38 @@
+#!/bin/bash
+
+: "${NODE_IMAGE:=node:14.15.1}"
+
+MOUNTS=( "${HOME}" )
+if test "${PWD:0:${#HOME}}" != "${HOME}"; then
+    MOUNTS+=( "${PWD}" )
+fi
+for mount in ${NODE_ADDITIONAL_MOUNTS}; do
+    MOUNTS+=( "${mount}" )
+done
+
+if test -n "${NODE_NO_MOUNTS}"; then
+    MOUNTS=()
+fi
+
+MOUNT_PARAMETERS=""
+for mount in ${MOUNTS[@]}; do
+    if ! test -d "${mount}"; then
+        echo "ERROR: Mount path <${mount}> does not exist."
+        exit 1
+    fi
+    MOUNT_PARAMETERS="${MOUNT_PARAMETERS} --mount type=bind,src=${mount},dst=${mount}"
+done
+
+if ! docker pull --quiet "${NODE_IMAGE}" >/dev/null; then
+    echo "ERROR: Unable to pull ${NODE_IMAGE}."
+    exit 1
+fi
+
+COMMAND="$(basename "$0")"
+
+docker run --interactive --tty \
+    ${MOUNT_PARAMETERS} \
+    --user "$(id -u):$(id -g)" \
+    --env HOME=${HOME} \
+    --workdir "${PWD}" \
+    "${NODE_IMAGE}" "${COMMAND}" "$@"

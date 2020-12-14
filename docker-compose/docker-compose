@@ -1,0 +1,10 @@
+#!/bin/bash
+
+: "${DOCKER_COMPOSE_IMAGE:=docker-compose}"
+
+docker run --interactive --tty \
+    --mount "type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock" \
+    --mount "type=bind,src=${PWD},dst=${PWD}" \
+    --user "$(id-u):$(id -g)" \
+    --workdir "${PWD}" \
+    "${DOCKER_COMPOSE_IMAGE}" "$@"

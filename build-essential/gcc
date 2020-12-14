@@ -1,0 +1,32 @@
+#!/bin/bash
+
+: "${BUILD_IMAGE:=build}"
+
+MOUNTS=( "${HOME}" )
+if test "${PWD:0:${#HOME}}" != "${HOME}"; then
+    MOUNTS+=( "${PWD}" )
+fi
+for mount in ${BUILD_ADDITIONAL_MOUNTS}; do
+    MOUNTS+=( "${mount}" )
+done
+
+if test -n "${BUILD_NO_MOUNTS}"; then
+    MOUNTS=()
+fi
+
+MOUNT_PARAMETERS=""
+for mount in ${MOUNTS[@]}; do
+    if ! test -d "${mount}"; then
+        echo "ERROR: Mount path <${mount}> does not exist."
+        exit 1
+    fi
+    MOUNT_PARAMETERS="${MOUNT_PARAMETERS} --mount type=bind,src=${mount},dst=${mount}"
+done
+
+COMMAND="$(basename "$0")"
+
+docker run --interactive --tty \
+    ${MOUNT_PARAMETERS} \
+    --user "$(id -u):$(id -g)" \
+    --workdir "${PWD}" \
+    "${BUILD_IMAGE}" "${COMMAND}" "$@"

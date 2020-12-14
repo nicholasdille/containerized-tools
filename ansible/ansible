@@ -1,0 +1,37 @@
+#!/bin/bash
+
+: "${ANSIBLE_IMAGE:=nicholasdille/ansible:2.9}"
+
+MOUNTS=( "${HOME}" )
+if test "${PWD:0:${#HOME}}" != "${HOME}"; then
+    MOUNTS+=( "${PWD}" )
+fi
+for mount in ${ANSIBLE_ADDITIONAL_MOUNTS}; do
+    MOUNTS+=( "${mount}" )
+done
+
+if test -n "${ANSIBLE_NO_MOUNTS}"; then
+    MOUNTS=()
+fi
+
+MOUNT_PARAMETERS=""
+for mount in ${MOUNTS[@]}; do
+    if ! test -d "${mount}"; then
+        echo "ERROR: Mount path <${mount}> does not exist."
+        exit 1
+    fi
+    MOUNT_PARAMETERS="${MOUNT_PARAMETERS} --mount type=bind,src=${mount},dst=${mount}"
+done
+
+if ! docker pull --quiet "${ANSIBLE_IMAGE}" >/dev/null; then
+    echo "ERROR: Unable to pull ${ANSIBLE_IMAGE}."
+    exit 1
+fi
+
+COMMAND="$(basename "$0")"
+
+docker run --interactive --tty \
+    ${MOUNT_PARAMETERS} \
+    --user "$(id -u):$(id -g)" \
+    --workdir "${PWD}" \
+    "${ANSIBLE_IMAGE}" "${COMMAND}" "$@"

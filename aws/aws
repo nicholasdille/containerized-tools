@@ -1,6 +1,6 @@
 #!/bin/bash
 
-: "${AWS_IMAGE:=mikesir87/aws-cli:v1}"
+: "${AWS_IMAGE:=mikesir87/aws-cli:v2}"
 
 MOUNTS=( "${HOME}" )
 if test "${PWD:0:${#HOME}}" != "${HOME}"; then
@@ -15,7 +15,7 @@ if test -n "${AWS_NO_MOUNTS}"; then
 fi
 
 MOUNT_PARAMETERS=""
-for mount in ${MOUNTS[@]}; do
+for mount in "${MOUNTS[@]}"; do
     if ! test -d "${mount}"; then
         echo "ERROR: Mount path <${mount}> does not exist."
         exit 1
@@ -30,8 +30,8 @@ fi
 
 COMMAND="$(basename "$0")"
 
-docker run --interactive --tty \
-    ${MOUNT_PARAMETERS} \
+echo docker run --interactive --tty \
+    "${MOUNT_PARAMETERS}" \
     --user "$(id -u):$(id -g)" \
     --env HOME=${HOME} \
     --workdir "${PWD}" \
